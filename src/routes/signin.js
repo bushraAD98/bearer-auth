@@ -14,10 +14,6 @@ routers.post('/signin',basicAuth,signInHandler);
 
 
 
-
-
-
-
   function signInHandler(req,res){
 
     res.status(200).json(req.user)
