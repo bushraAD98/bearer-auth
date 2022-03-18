@@ -1,39 +1,27 @@
-const base64 = require("base-64");
-const bcrypt = require("bcrypt");
-const { users } = require("../models/index");
+'use strict';
 
-const basicAuth = async (req, res, next) => {
-  if (req.headers["authorization"]) {
-    //in postman we will send the req inside the auth header
-    let encodedPart = req.headers.authorization.split(" ")[1]; //make array put the str in it & split it
-    console.log(req.headers["authorization"]);
-    // let encodedPart = basicHeaderParts.pop();
+const {Users} = require('../models/index.js');
+const base64 = require('base-64');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const API_SECRET = process.env.API_SECRET || 'the secret';
+ async function basic(req, res, next) {
 
-    let decoded = base64.decode(encodedPart);
-    let [userName, passWord] = decoded.split(":");
-    console.log(decoded);
-    console.log(encodedPart);
-    //    console.log(basicHeaderParts);
-    // console.log(passWord);
-    try {
-      const user = await users.findOne({ where: { userName: userName } });
-      console.log("hello", user);
-      if (user) {
-        const valid = await bcrypt.compare(passWord, user.passWord);
-        if (valid) {
-          req.user = user;
-          next();
-        } else {
-          next("user is not valid");
-        }
-      }
-      else{
-        next("user is not valid");  
-      }
-    } catch (error) {
-      next(error);
+    const encodedHeaders = req.headers.authorization.split(' ')[1]; // "Basic dGFtaW06cGl6emE="
+    console.log('encodedHeaders',encodedHeaders);
+    const [userName, passWord] = base64.decode(encodedHeaders).split(':'); // spread operator
+    
+    const user = await Users.findOne({ where: { userName } });
+    const valid = await bcrypt.compare(passWord, user.passWord);
+    if (valid) {
+        let newToken = jwt.sign({ userName: user.userName }, API_SECRET,{expiresIn:900000});
+
+        user.token = newToken;
+        res.status(200).json(user)
+    } else {
+        next('Invalid User');
     }
-  }
-};
 
-module.exports = basicAuth;
+}
+
+module.exports = basic;
