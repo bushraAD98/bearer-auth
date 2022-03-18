@@ -1,9 +1,11 @@
 "use strict";
 
 const { Sequelize, DataTypes } = require("sequelize");
-const users = require("./user");
+const Users = require("./user");
+// const users = require("./user");
 require("dotenv").config();
-
+const Collection = require('./collection.js');
+const Music = require('./music');
 
 
 const DATABASE_URL =
@@ -23,4 +25,8 @@ let sequelizeOptions =
 
 let sequelize = new Sequelize(DATABASE_URL, sequelizeOptions);
 
-module.exports = { db: sequelize, users: users(sequelize, DataTypes) };
+let musicModel = Music(sequelize,DataTypes)
+
+
+module.exports = { db: sequelize, Users:Users(sequelize, DataTypes),
+music : new Collection(musicModel) };

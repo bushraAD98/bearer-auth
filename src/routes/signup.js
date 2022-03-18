@@ -1,6 +1,6 @@
 'use strict';
 const express = require ('express');
-const {users} = require('../models/index');
+const {Users} = require('../models/index');
 const routers = express.Router();
 const bcrypt = require('bcrypt');
 const base64 = require('base-64');
@@ -10,13 +10,14 @@ routers.post('/signup',signUpHandler);
 
 
  async function signUpHandler(req,res){
-let{userName,passWord} = req.body;
+let{userName,passWord,role} = req.body;
 console.log(`${userName} and ${passWord}`);
 try{
 let hashed =  await bcrypt.hash(passWord,5);
-let newUser = await users.create({
+let newUser = await Users.create({
     userName : userName,
-    passWord: hashed
+    passWord: hashed,
+    role : role
 })
 res.status(201).json(newUser)
 }
